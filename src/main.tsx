@@ -31,10 +31,6 @@ const router = createBrowserRouter([
         element: <AddQuestion />,
       },
       {
-        path: "/",
-        element: <Questioneer />,
-      },
-      {
         path: "/about",
         element: <About />,
       },
