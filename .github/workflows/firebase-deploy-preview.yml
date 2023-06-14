@@ -3,6 +3,8 @@ on:
   pull_request:
     branches:
       - master
+  push:
+
 jobs:
   build_and_preview:
     if: "${{ github.event.pull_request.head.repo.full_name == github.repository }}"
@@ -12,8 +14,13 @@ jobs:
       - name: Install pnpm
         run: npm install -g pnpm
       - run: pnpm install && pnpm run build
+      - name: Extract branch name
+        shell: bash
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+        id: extract_branch
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: "${{ secrets.GITHUB_TOKEN }}"
           firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_SHVUSHON_HAHAMIM }}"
           projectId: shvushon-hahamim
+          channelId: ${{ steps.extract_branch.outputs.branch }}
