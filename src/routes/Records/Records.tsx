@@ -15,13 +15,15 @@ export default function Records() {
     { enabled: !!user }
   );
 
+  // const reversedRecords = records ? Array.from(records).reverse() : [];
+  const reversedRecords = records ? records.slice().reverse() : [];
   return (
     <div>
       <div className="records-page-container mt-6">
         <h2>רשימת השיאים</h2>
         <div id="records">
           {isRecordsLoading && <p>טוען...</p>}
-          {records?.reverse()?.map((record, i) => (
+          {reversedRecords.map((record, i) => (
             <p key={i}>{`${record.score} - ${record.name}`}</p>
           ))}
         </div>
