@@ -1,0 +1,28 @@
+.question-added-container {
+    width: 100%;
+    position: absolute;
+    top: 50%;
+    right: 50%;
+    transform: translate(50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    a {
+        text-decoration: none;
+        color: #ecf8f7;
+        text-align: center;
+        background-color: #0294a2;
+        border-radius: 1rem;
+        padding: 0.5rem 1rem;
+        border: 1px solid #ecf8f7;
+
+        &:hover {
+            background-color: #ecf8f7;
+            color: #0294a2;
+            border: 1px solid #0294a2;
+            transition: all 500ms ease;
+        }
+    }
+
+}

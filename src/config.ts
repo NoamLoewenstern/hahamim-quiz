@@ -1,0 +1,3 @@
+export const MAX_SCORE_PER_QUESTION = 100;
+export const NUMBER_OF_QUESTIONS_FOR_EACH_LEVEL = 6;
+export const NUMBER_OF_QUESTIONS_TOTAL = 18;

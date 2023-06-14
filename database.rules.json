@@ -1,0 +1,29 @@
+{
+  "rules": {
+    "questions": {
+      ".read": "auth.uid != null",
+    	".write": "auth != null && root.child('users').child(auth.uid).child('roles').child('isAdmin').val() === true" // only admin 
+    },
+    "records": {
+      ".read": "auth.uid != null",  // signed-in user can read records
+      ".write": "auth.uid != null", // signed-in user can create new record
+      ".indexOn": ["score"]
+    },
+    "waiting": {
+        ".write": "auth.uid != null", // signed-in user can add new question
+        ".read": "auth != null && root.child('users').child(auth.uid).child('roles').child('isAdmin').val() === true" // only admin
+    },
+    "scores": {
+       ".write": "auth.uid != null", // didn't understand the use for this. allowing all signed-in users
+      ".read": "auth.uid != null" // didn't understand the use for this. allowing all signed-in users
+      
+    },
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        // only admin can CRUD users info
+          ".write": "auth != null && root.child('users').child(auth.uid).child('roles').child('isAdmin').val() === true" 
+      }
+    }
+  }
+}

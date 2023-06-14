@@ -1,69 +1,17 @@
----
-layout: default
----
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/facivon.png" />
+    <meta property="og:image" itemprop="image" content="/images/public.jpg" />
+    <link href="https://fonts.googleapis.com/css2?family=Heebo&display=swap" rel="stylesheet" />
+    <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
 
-<script type="module" src="js/utils/firebase-init.js"></script>
-<script type="module" defer src="js/index.js"></script>
-<div class="game-page-container">
-  <div id="start-container">
-    <h2>{{site.title}} - {{site.subtitle}}</h2>
-    <p>לפניכם שעשועון שמטרתו להכיר יותר את חכמינו ז"ל.</p>
-    <p>בכל שאלה יהיה שם של חכם ואתם תצטרכו לדעת מאיזה דור הוא.</p>
-    <p>יש שלוש רמות קושי - קל, בינוני, כבד.</p>
-    <p>בכל דרגת קושי יהיו 6 שאלות, בסה"כ 18 שאלות.</p>
-    <p>השעשועון על זמן, ויש ניקוד לפי הזמן.</p>
-    <p>בהצלחה!</p>
-    <button onclick="startGame()" class="btn">התחל משחק</button>
-  </div>
-  <div id="game-container" hidden>
-    <h3 id="level"></h3>
-    <h3 class="question"></h3>
-    <div class="answer-btn-group">
-      <button class="answer-btn" onclick="checkAnswer(0)">תנא</button>
-      <button class="answer-btn" onclick="checkAnswer(1)">אמורא</button>
-      <button class="answer-btn" onclick="checkAnswer(2)">ראשון</button>
-      <button class="answer-btn" onclick="checkAnswer(3)">אחרון</button>
-    </div>
-    <p id="time"></p>
-    <p id="question-count"></p>
-    <div class="game-footer" id="game-footer" hidden>
-      <div class="game-footer-top">
-        <span class="after-answer-text"></span>
-        <button onclick="nextQuestion()" class="btn">לשאלה הבאה</button>
-      </div>
-
-      <div class="game-footer-bottom">
-        <span id="smaller-score"></span>
-        <a id="google" hidden>תלמד עליו קצת</a>
-      </div>
-    </div>
-  </div>
-  <div class="end-game-container" id="end-game-container" hidden>
-    <p>
-      הניקוד שלך הוא:
-      <span id="score"></span>
-      <br />
-      המיקום שלך בציבור הוא:
-      <span id="location"></span>
-      <br />
-      שכוייח!
-    </p>
-
-    <div id="enter-record" class="game-page-container" style="display: none">
-      <label>כתוב את שמך בשביל לרשום את השיא בטבלה:</label>
-      <input id="name" class="text-box" />
-      <div class="error-place"></div>
-
-      <button class="btn" onclick="addRecord()">הוסף שיא</button>
-      <br />
-    </div>
-    <div class="game-page-container">
-      <button onclick="restartGame()" class="btn">משחק חוזר</button>
-      <p>(השאלות נבחרות רנדומלית מתוך מאגר גדול)</p>
-      <button onclick="window.location.replace('add-question.html')" class="btn">
-        להוספת שאלה למאגר השאלות
-      </button>
-      <button onclick="window.location.replace('records.html')" class="btn">לרשימת השיאים</button>
-    </div>
-  </div>
-</div>
+    <title>חידון חכמים</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
