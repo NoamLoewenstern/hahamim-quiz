@@ -2,7 +2,6 @@ import { useDisclosure } from "@mantine/hooks";
 import { Portal } from "@mantine/core";
 import Loader from "~/Componenets/Loader/Loader";
 import { atom, useAtom } from "jotai";
-import { useEffect, useState } from "react";
 
 const globalLoadingSpinnerAtom = atom(false);
 
