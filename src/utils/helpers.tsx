@@ -2,9 +2,14 @@ export function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 function shuffleArray<T>(array: T[]): T[] {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
+  if (array.length < 2) return array;
+  let currentIndex = array.length;
+  while (currentIndex !== 0) {
+    // Pick a remaining element...
+    const randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+    // Swap
+    [array[currentIndex], array[randomIndex]] = [array[randomIndex] as T, array[currentIndex] as T];
   }
   return array;
 }

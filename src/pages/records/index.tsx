@@ -2,9 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import useUser from "~/hooks/useUser";
 import { getRecords } from "~/firebase/lib/records";
 import { getScores } from "~/firebase/lib/scores";
-import ScoresChart from "../../Componenets/ScoresChart";
+import ScoresChart from "~/Componenets/ScoresChart";
+import { type NextPage } from "next";
 
-export default function Records() {
+export const Records: NextPage = () => {
   const { user } = useUser();
   const { data: records, isLoading: isRecordsLoading } = useQuery(["records"], getRecords, {
     enabled: !!user,
@@ -36,4 +37,6 @@ export default function Records() {
       </div>
     </div>
   );
-}
+};
+
+export default Records;

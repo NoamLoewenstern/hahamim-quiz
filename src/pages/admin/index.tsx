@@ -1,5 +1,5 @@
 import useUser from "~/hooks/useUser";
-import Login from "./Login";
+import { Login } from "./Login";
 import { LoadingSpinnerModal } from "~/hooks/useLoadingSpinner";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -9,8 +9,9 @@ import {
 } from "~/firebase/lib/waiting-questions";
 import { useState } from "react";
 import { getScoresSum } from "~/firebase/lib/scores";
+import { type NextPage } from "next";
 
-export default function Admin() {
+export const Admin: NextPage = () => {
   const { user, isAdmin, isLoadingUser } = useUser();
   const {
     data: waitingNewQuestions,
@@ -87,4 +88,5 @@ export default function Admin() {
       {scoresSum && <p>Played Game: {scoresSum}</p>}
     </div>
   );
-}
+};
+export default Admin;
