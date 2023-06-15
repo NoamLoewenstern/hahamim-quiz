@@ -1,9 +1,8 @@
 import { useContext, useEffect, useRef } from "react";
 import { NUMBER_OF_QUESTIONS_TOTAL } from "~/config";
-import { convertDifficultyLevelToHebrew } from "~/types/types";
 import { MachineContext } from "./quiz-machine/machineContext";
 import { getFormatedTime } from "./quiz-machine/utils";
-import { IRabbiType, RabbiTypeKeys } from "~/firebase/types";
+import { DifficultiesTypes, DifficultyInHebrew, IRabbiType, RabbiTypeKeys } from "~/firebase/types";
 
 export default function GameFlow() {
   const [state, send] = useContext(MachineContext);
@@ -19,7 +18,7 @@ export default function GameFlow() {
     send({ type: "ANSWER", answerIndex });
   };
 
-  const difficultyHebrewFormat = convertDifficultyLevelToHebrew(question.difficultyLevel);
+  const difficultyHebrewFormat = DifficultyInHebrew[DifficultiesTypes[question.difficultyLevel]];
 
   const answeredStyles = (index: number) => {
     if (!state.matches("feedback") || answeredIndex === null) return "";
@@ -31,8 +30,8 @@ export default function GameFlow() {
 
   return (
     <div className="game-container">
-      <h3 className="font-bold text-lg self-center">{`רמת קושי: ${difficultyHebrewFormat}`}</h3>
-      <h3 className="font-bold text-lg self-center">{question.title}</h3>
+      <h3 className="self-center text-lg font-bold">{`רמת קושי: ${difficultyHebrewFormat}`}</h3>
+      <h3 className="self-center text-lg font-bold">{question.title}</h3>
       <div className="answer-btn-group">
         {question.options.map((option, index) => (
           <button

@@ -14,7 +14,24 @@ export interface DB {
     countPlayed: number;
   };
 }
-export const Difficulties = ["easy", "medium", "hard"] as const;
+export const DifficultiesTypes = {
+  easy: "easy",
+  medium: "medium",
+  hard: "hard",
+  0: "easy",
+  1: "medium",
+  2: "hard",
+} as const;
+export const DifficultyInHebrew = {
+  [DifficultiesTypes.easy]: "קל",
+  [DifficultiesTypes.medium]: "בינוני",
+  [DifficultiesTypes.hard]: "קשה",
+} as const;
+export const Difficulties = [
+  DifficultiesTypes.easy,
+  DifficultiesTypes.medium,
+  DifficultiesTypes.hard,
+] as const;
 export type IDifficulty = (typeof Difficulties)[number];
 export type Questions = Record<IDifficulty, DifficultyTable>;
 
