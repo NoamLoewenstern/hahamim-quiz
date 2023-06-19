@@ -1,10 +1,14 @@
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-export default function Navigate({ to }: { to: string }) {
+export default function Navigate({ to, replace }: { to: string; replace?: boolean }) {
   const router = useRouter();
   useEffect(() => {
-    router.push(to);
+    if (replace) {
+      router.replace(to);
+    } else {
+      router.push(to);
+    }
   }, []);
-  return <></>;
+  return null;
 }

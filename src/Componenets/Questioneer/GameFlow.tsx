@@ -1,28 +1,26 @@
-import { useContext, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { NUMBER_OF_QUESTIONS_TOTAL } from "~/config";
-import { MachineContext } from "./quiz-machine/machineContext";
-import { getFormatedTime } from "./quiz-machine/utils";
-import { DifficultiesTypes, DifficultyInHebrew, IRabbiType, RabbiTypeKeys } from "~/firebase/types";
+import { getFormatedTime } from "~/xstate-machines/quiz-machine/utils";
+import { AnswerTypeInHebrew, AnswerTypes, DifficultyInHebrew, IAnswerType } from "~/lib/db/types";
+import { useQuizMachine } from "~/xstate-machines/quiz-machine";
 
 export default function GameFlow() {
-  const [state, send] = useContext(MachineContext);
+  const [state, send] = useQuizMachine();
 
-  const { currentQuestion: question, elapsedTime, questionNumber, answeredIndex } = state.context;
+  const { currentQuestion: question, elapsedTime, questionNumber, answered } = state.context;
+  const answeredIndex = answered ? AnswerTypes.indexOf(answered) : null;
   if (question === null) {
     return <>Error Question is Null. Should Go To End Of The Game.</>;
   }
 
-  const handleCheckAnswer = (rabbiType: IRabbiType) => {
+  const handleCheckAnswer = (answer: IAnswerType) => {
     if (!state.matches("question")) return;
-    const answerIndex = question.options.findIndex((option) => option.value === rabbiType);
-    send({ type: "ANSWER", answerIndex });
+    send({ type: "ANSWER", answer });
   };
-
-  const difficultyHebrewFormat = DifficultyInHebrew[DifficultiesTypes[question.difficultyLevel]];
 
   const answeredStyles = (index: number) => {
     if (!state.matches("feedback") || answeredIndex === null) return "";
-    if (index === question.correctIndex) return "correct-answer";
+    if (AnswerTypes[index] === question.answer) return "correct-answer";
 
     return answeredIndex === index ? "wrong-answer" : "";
   };
@@ -30,17 +28,17 @@ export default function GameFlow() {
 
   return (
     <div className="game-container">
-      <h3 className="self-center text-lg font-bold">{`רמת קושי: ${difficultyHebrewFormat}`}</h3>
-      <h3 className="self-center text-lg font-bold">{question.title}</h3>
+      <h3 className="self-center text-lg font-bold">{`רמת קושי: ${DifficultyInHebrew[""]}`}</h3>
+      <h3 className="self-center text-lg font-bold">{question.question}</h3>
       <div className="answer-btn-group">
-        {question.options.map((option, index) => (
+        {AnswerTypes.map((answerOption, index) => (
           <button
-            key={option.value}
+            key={answerOption}
             className={`answer-btn ${answeredStyles(index)}`}
-            onClick={() => handleCheckAnswer(option.value)}
+            onClick={() => handleCheckAnswer(answerOption)}
             disabled={optionsDisabled}
           >
-            {option.label}
+            {AnswerTypeInHebrew[answerOption]}
           </button>
         ))}
       </div>
@@ -53,7 +51,7 @@ export default function GameFlow() {
   );
 }
 function FeedBack() {
-  const [state, send] = useContext(MachineContext);
+  const [state, send] = useQuizMachine();
   const { currentQuestion: question, score, answeredCorrectly } = state.context;
   const nextQuestionBtnRef = useRef<HTMLButtonElement>(null);
 
@@ -81,7 +79,7 @@ function FeedBack() {
       <div className="game-footer-bottom">
         <span id="smaller-score">ניקוד: {score}</span>
         {!answeredCorrectly && (
-          <a href={`https://google.com/search?q=${question?.title}`} target="_blank">
+          <a href={`https://google.com/search?q=${question?.question}`} target="_blank">
             תלמד עליו קצת
           </a>
         )}

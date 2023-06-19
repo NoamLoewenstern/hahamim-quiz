@@ -22,7 +22,7 @@ export const About: NextPage = () => {
       <h3>מנכ"ל העמותה:</h3>
       <p>אורי בובליל</p>
       <h3>לעוד מיזמים מבית שבושון:</h3>
-      <div className="flex flex-col">
+      <div className="flex w-fit flex-col">
         <a href="https://shvushon.github.io/shvushon">שבושון</a>
         <a href="https://shvushon.github.io/shvushon2">שבושון 2</a>
         <a href="https://shvushon.github.io/shlichim">שליחון</a>

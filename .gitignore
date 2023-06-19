@@ -73,3 +73,6 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+.env*.local
+prisma/seed.json

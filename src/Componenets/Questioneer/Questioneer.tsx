@@ -1,8 +1,7 @@
-import "./Questioneer.scss";
 import { useMachine } from "@xstate/react";
-import { quizMachine } from "./quiz-machine/quiz-machine";
+import { MachineContext } from "~/xstate-machines/quiz-machine/machineContext";
+import { quizMachine } from "~/xstate-machines/quiz-machine";
 import { useGetNextQuestions } from "./useGetNextQuestions";
-import { MachineContext } from "./quiz-machine/machineContext";
 import HeaderStartGame from "./HeaderStartGame";
 import EndGame from "./EndGame";
 import GameFlow from "./GameFlow";

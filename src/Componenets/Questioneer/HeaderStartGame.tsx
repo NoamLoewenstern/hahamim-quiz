@@ -1,12 +1,11 @@
-import { useContext } from "react";
 import useTitle from "~/hooks/useTitle";
-import { MachineContext } from "./quiz-machine/machineContext";
 import { useGlobalLoadingSpinner } from "~/hooks/useLoadingSpinner";
 import { waitFor } from "xstate/lib/waitFor";
 import { useActor } from "@xstate/react";
+import { useQuizMachine } from "~/xstate-machines/quiz-machine";
 
 export default function HeaderStartGame() {
-  const [_, send, service] = useContext(MachineContext);
+  const [_, send, service] = useQuizMachine();
   const { open, close } = useGlobalLoadingSpinner();
   const { title, subtitle } = useTitle();
 

@@ -1,12 +1,14 @@
-import { createMachine, assign, interpret } from "xstate";
+import { createMachine, assign } from "xstate";
 import { z } from "zod";
 import { calculateScore } from "./utils";
-import { RabbiInfo } from "~/firebase/types";
+import { IAnswerType, IQuestionEntry, QuestionEntry } from "~/lib/db/types";
+import { useContext } from "react";
+import { MachineContext } from "./machineContext";
 
 interface QuizContext {
-  currentQuestion: IQuestion | null;
+  currentQuestion: IQuestionEntry | null;
   answeredCorrectly: boolean;
-  answeredIndex: number | null;
+  answered: IAnswerType | null;
   questionNumber: number;
   score: number;
   startTime: number;
@@ -16,18 +18,10 @@ interface QuizContext {
 }
 
 const AnswerOption = z.object({
-  value: RabbiInfo.shape.type,
+  value: QuestionEntry.shape.answer,
   label: z.string(),
 });
 export type IAnswerOption = z.infer<typeof AnswerOption>;
-
-export const Question = z.object({
-  title: z.string(),
-  options: z.array(AnswerOption),
-  correctIndex: z.number(),
-  difficultyLevel: z.enum(["easy", "medium", "hard"]),
-});
-export type IQuestion = z.infer<typeof Question>;
 
 const enumQuizEventTypes = {
   START: "START",
@@ -40,8 +34,8 @@ type QuizEventTypes = (typeof enumQuizEventTypes)[keyof typeof enumQuizEventType
 
 type QuizEvent = {
   type: QuizEventTypes;
-  answerIndex?: number;
-  questions?: IQuestion[];
+  answer?: IAnswerType;
+  questions?: IQuestionEntry[];
 };
 
 const QuizStateTypes = {
@@ -77,7 +71,7 @@ type QuizService = {
 const initContext: QuizContext = {
   currentQuestion: null,
   answeredCorrectly: false,
-  answeredIndex: null,
+  answered: null,
   questionNumber: 0,
   score: 0,
   startTime: 0,
@@ -127,7 +121,7 @@ export const quizMachine = createMachine<QuizContext, QuizEvent, QuizStateTypes,
           },
           {
             target: QuizStateTypes.question, // durring the quiz
-            cond: (ctx) => Question.safeParse(ctx.currentQuestion).success,
+            cond: (ctx) => QuestionEntry.safeParse(ctx.currentQuestion).success,
           },
           { target: QuizStateTypes.error }, // default to error
         ],
@@ -199,22 +193,22 @@ export const quizMachine = createMachine<QuizContext, QuizEvent, QuizStateTypes,
       }),
       [QuizActionTypes.calculateScoreForQuestion]: assign({
         score: (context, event) => {
-          const { answerIndex: answer } = event;
+          const { answer } = event;
           if (answer === undefined) throw new Error("Answer is undefined");
           if (!context.currentQuestion) throw new Error("Current question is null");
-          if (answer === context.currentQuestion.correctIndex) {
+          if (answer === context.currentQuestion.answer) {
             return context.score + calculateScore({ elapsedTime: context.elapsedTime });
           }
           return context.score;
         },
       }),
       [QuizActionTypes.assignAnsweredCorrectly]: assign({
-        answeredIndex: (_, event) => {
-          if (event.answerIndex === undefined) throw new Error("Answer is undefined");
-          return event.answerIndex;
+        answered: (_, event) => {
+          if (event.answer === undefined) throw new Error("Answer is undefined");
+          return event.answer;
         },
         answeredCorrectly: (ctx, event) => {
-          return event.answerIndex === ctx.currentQuestion?.correctIndex;
+          return event.answer === ctx.currentQuestion?.answer;
         },
       }),
     },
@@ -238,3 +232,5 @@ export const quizMachine = createMachine<QuizContext, QuizEvent, QuizStateTypes,
     },
   }
 );
+
+export const useQuizMachine = () => useContext(MachineContext);

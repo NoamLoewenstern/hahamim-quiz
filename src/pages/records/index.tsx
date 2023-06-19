@@ -1,30 +1,57 @@
-import { useQuery } from "@tanstack/react-query";
-import useUser from "~/hooks/useUser";
-import { getRecords } from "~/firebase/lib/records";
-import { getScores } from "~/firebase/lib/scores";
 import ScoresChart from "~/Componenets/ScoresChart";
-import { type NextPage } from "next";
+import { Record as IRecord, ScoreCount } from "@prisma/client";
+import { GetStaticProps, InferGetStaticPropsType, type NextPage } from "next";
+import { prisma } from "~/server/db";
 
-export const Records: NextPage = () => {
-  const { user } = useUser();
-  const { data: records, isLoading: isRecordsLoading } = useQuery(["records"], getRecords, {
-    enabled: !!user,
+export const getStaticProps: GetStaticProps<{
+  records: Pick<IRecord, "name" | "score">[];
+  scoresCount: Record<ScoreCount["score"], ScoreCount["count"]>;
+  sumTotalPlayed: number;
+}> = async () => {
+  const records = await prisma.record.findMany({
+    select: { name: true, score: true },
+    orderBy: { score: "desc" },
   });
-  const { data: scores, isLoading: isScoresLoading } = useQuery(
-    ["scores"],
-    () => getScores({ includeSum: true }),
-    { enabled: !!user }
+  const scoresCount = await prisma.scoreCount.findMany({
+    select: { score: true, count: true },
+    orderBy: { score: "asc" },
+  });
+  const scoresCountMap: Record<ScoreCount["score"], ScoreCount["count"]> = scoresCount.reduce(
+    (acc, curr) => {
+      acc[curr.score] = curr.count;
+      return acc;
+    },
+    {}
   );
 
-  // const reversedRecords = records ? Array.from(records).reverse() : [];
-  const reversedRecords = records ? records.slice().reverse() : [];
+  const {
+    _sum: { count: sumTotalPlayed },
+  } = await prisma.scoreCount.aggregate({
+    _sum: { count: true },
+  });
+
+  return {
+    props: {
+      records,
+      scoresCount: scoresCountMap,
+      sumTotalPlayed: sumTotalPlayed || 0,
+    },
+    // revalidate: 60,
+  };
+};
+
+type Props = InferGetStaticPropsType<typeof getStaticProps>;
+export const Records: NextPage<Props> = ({
+  records = [],
+  scoresCount = {},
+  sumTotalPlayed = 0,
+}) => {
   return (
     <div>
       <div className="records-page-container mt-6">
-        <h2>רשימת השיאים</h2>
+        <h2>רשימת השיאים (מתוך {sumTotalPlayed} משחקים)</h2>
         <div id="records">
-          {isRecordsLoading && <p>טוען...</p>}
-          {reversedRecords.map((record, i) => (
+          {records.map((record, i) => (
             <p key={i}>{`${record.score} - ${record.name}`}</p>
           ))}
         </div>
@@ -32,8 +59,7 @@ export const Records: NextPage = () => {
       <div className="records-page-container mt-6">
         <h2>סטטיסטיקות</h2>
         <h3>(הניקוד מעוגל לעשרות)</h3>
-        {isScoresLoading && <p>טוען...</p>}
-        {scores && <ScoresChart data={scores.scores} />}
+        <ScoresChart data={scoresCount} />$
       </div>
     </div>
   );

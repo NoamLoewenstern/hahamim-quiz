@@ -1,12 +1,12 @@
-import { Link, useNavigate } from "react-router-dom";
 import useTitle from "~/hooks/useTitle";
+import { signIn, signOut } from "next-auth/react";
+import { isMobile } from "react-device-detect";
 
-import "./Navbar.scss";
 import { useState } from "react";
-import useIsMobile from "~/hooks/useIsMobile";
 import useCurrentPageRoute from "~/hooks/useCurrentPageRoute";
 import useUser from "~/hooks/useUser";
-import { auth } from "~/firebase/config";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 function Header() {
   const { title, subtitle } = useTitle();
@@ -21,7 +21,7 @@ function Header() {
 function Logo() {
   return (
     <div className="logo-container">
-      <Link to="/">
+      <Link href="/">
         <img
           src="images/white.png"
           style={{ backgroundColor: "transparent" }}
@@ -34,10 +34,10 @@ function Logo() {
 }
 
 export default function Navbar() {
+  const router = useRouter();
   const currentRoute = useCurrentPageRoute();
-  const { user, isAdmin } = useUser();
-  const navigate = useNavigate();
-  const isMobile = useIsMobile();
+  const { user, isAdmin, isLoadingUser } = useUser();
+
   const [isMobileMenuActive, setIsMobileMenuActive] = useState(false);
 
   const toggleMobileMenu = () => {
@@ -70,7 +70,7 @@ export default function Navbar() {
         >
           <li className="nav-items">
             <Link
-              to="/"
+              href="/"
               onClick={hideMobileMenu}
               className={`nav-links ${currentRoute === "/" ? "active-page" : ""}`}
             >
@@ -80,7 +80,7 @@ export default function Navbar() {
           </li>
           <li className="nav-items">
             <Link
-              to="/add-question"
+              href="/add-question"
               onClick={hideMobileMenu}
               className={`nav-links ${currentRoute === "/add-question" ? "active-page" : ""}`}
             >
@@ -91,7 +91,7 @@ export default function Navbar() {
           <li className="nav-items">
             <Link
               onClick={hideMobileMenu}
-              to="/records"
+              href="/records"
               className={`nav-links ${currentRoute === "/records" ? "active-page" : ""}`}
             >
               <i className="fa fa-line-chart nav-icons"></i>
@@ -101,39 +101,55 @@ export default function Navbar() {
           <li className="nav-items">
             <Link
               onClick={hideMobileMenu}
-              to="/about"
+              href="/about"
               className={`nav-links ${currentRoute === "/about" ? "active-page" : ""}`}
             >
               <i className="fa fa-beer nav-icons"></i>
               אודות
             </Link>
           </li>
-          {user && isAdmin && (
-            <>
-              <li className="nav-items">
-                <button
-                  className="nav-links"
-                  onClick={() => {
-                    hideMobileMenu();
-                    navigate("/admin");
-                  }}
-                >
-                  Admin
-                </button>
-              </li>
-              <li className="nav-items">
-                <button
-                  className="nav-links"
-                  onClick={() => {
-                    hideMobileMenu();
-                    auth.signOut().then(() => window.location.replace("/"));
-                  }}
-                >
-                  התנתק
-                </button>
-              </li>
-            </>
+          {isAdmin && (
+            <li className="nav-items">
+              <button
+                className="nav-links"
+                onClick={() => {
+                  hideMobileMenu();
+                  router.replace("/admin");
+                }}
+              >
+                Admin
+              </button>
+            </li>
           )}
+          {!isLoadingUser && user && (
+            <li className="nav-items">
+              <button
+                className="nav-links"
+                onClick={() => {
+                  hideMobileMenu();
+                  signOut().then(() => window.location.reload());
+                }}
+              >
+                התנתק
+              </button>
+            </li>
+          )}
+          {!isLoadingUser && !user && (
+            <li className="nav-items">
+              <button
+                className="nav-links"
+                onClick={() => {
+                  hideMobileMenu();
+                  signIn().catch(() => {
+                    router.push("/api/auth/signin");
+                  });
+                }}
+              >
+                התחבר
+              </button>
+            </li>
+          )}
+          {isLoadingUser && <li className="nav-items"></li>}
         </ul>
       </div>
     </nav>

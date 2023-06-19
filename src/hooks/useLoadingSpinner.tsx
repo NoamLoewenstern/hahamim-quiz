@@ -1,9 +1,19 @@
 import { useDisclosure } from "@mantine/hooks";
 import { Portal } from "@mantine/core";
-import Loader from "~/Componenets/Loader/Loader";
 import { atom, useAtom } from "jotai";
 
 const globalLoadingSpinnerAtom = atom(false);
+
+export function Loader() {
+  return (
+    <>
+      <div className="loader-container">
+        <div className="loader" id="loader"></div>
+      </div>
+      <div className="dark-screen" id="dark-screen"></div>
+    </>
+  );
+}
 
 export function LoadingSpinnerModal({ opened = true }: { opened?: boolean } = {}) {
   if (!opened) return null;

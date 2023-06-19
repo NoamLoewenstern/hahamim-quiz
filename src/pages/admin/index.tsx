@@ -1,49 +1,66 @@
-import useUser from "~/hooks/useUser";
-import { Login } from "./Login";
 import { LoadingSpinnerModal } from "~/hooks/useLoadingSpinner";
-import { useQuery } from "@tanstack/react-query";
-import {
-  acceptWaitingQuestion,
-  getWaitingNewQuestions,
-  removeWaitingQuestion,
-} from "~/firebase/lib/waiting-questions";
-import { useState } from "react";
-import { getScoresSum } from "~/firebase/lib/scores";
-import { type NextPage } from "next";
+import { useEffect } from "react";
+import { GetServerSideProps, type NextPage, InferGetServerSidePropsType } from "next";
+import { api } from "~/utils/api";
+import { AnswerTypeInHebrew, DifficultyInHebrew } from "~/lib/db/types";
+import { getServerAuthSession } from "~/server/auth";
+import { Session } from "next-auth";
 
-export const Admin: NextPage = () => {
-  const { user, isAdmin, isLoadingUser } = useUser();
+export const getServerSideProps: GetServerSideProps<{
+  adminUser: Session["user"];
+}> = async ({ req, res }) => {
+  const session = await getServerAuthSession({ req, res });
+  const isAdmin = session?.user.role === "ADMIN";
+  if (!session || !isAdmin) {
+    return {
+      redirect: {
+        destination: !session ? "/api/auth/signin" : "/",
+        // destination: !session ? "/about" : "/",
+        permanent: false,
+      },
+    };
+  }
+  return {
+    props: {
+      adminUser: session.user,
+    },
+  };
+};
+
+type Props = InferGetServerSidePropsType<typeof getServerSideProps>;
+
+export const Admin: NextPage<Props> = () => {
   const {
-    data: waitingNewQuestions,
-    isLoading,
+    data: pendingQuestions,
+    isLoading: isLoadingPendingQuestions,
     error: waitingQuestionsError,
     refetch: refetchWaitingQuestions,
-  } = useQuery(["getWaitingNewQuestions"], getWaitingNewQuestions);
-  const { data: scoresSum } = useQuery(["getScoresSum"], getScoresSum);
-  const [error, setError] = useState<Error | null>(null);
-
-  const handleAddQuestionToDB = async (questionKey: string) => {
-    try {
-      await acceptWaitingQuestion(questionKey);
+  } = api.admin.getPendingQuestions.useQuery();
+  const { data: sumTotalPlayed } = api.records.getSumTotalPlayed.useQuery();
+  const approveQuestion = api.admin.approveQuestion.useMutation({
+    onSuccess: () => {
       refetchWaitingQuestions();
-    } catch (e) {
-      console.error(e);
-      setError(e as Error);
-    }
-  };
-  const handleRemoveWaitingQuestion = async (questionKey: string) => {
-    try {
-      await removeWaitingQuestion(questionKey);
+    },
+  });
+  const deleteQuestion = api.admin.deleteQuestion.useMutation({
+    onSuccess: () => {
       refetchWaitingQuestions();
-    } catch (e) {
-      console.error(e);
-      setError(e as Error);
-    }
+    },
+  });
+  const error = waitingQuestionsError || approveQuestion.error || deleteQuestion.error || null;
+
+  useEffect(() => {
+    if (error) console.error(error);
+  }, [error]);
+
+  const handleAddQuestionToDB = (questionKey: string) => {
+    approveQuestion.mutate(questionKey);
+  };
+  const handleRemoveWaitingQuestion = (questionKey: string) => {
+    deleteQuestion.mutate(questionKey);
   };
 
-  if (isLoadingUser) return <LoadingSpinnerModal />;
-  if (!user || !isAdmin) return <Login />;
-  if (isLoading)
+  if (isLoadingPendingQuestions)
     return (
       <>
         <p>Loading Waiting Questions...</p>
@@ -56,20 +73,20 @@ export const Admin: NextPage = () => {
     <div>
       <div className="m-8">
         <h1>שאלות חדשות שהועלו:</h1>
-        {!waitingNewQuestions || Object.keys(waitingNewQuestions).length === 0 ? (
+        {!pendingQuestions || pendingQuestions.length === 0 ? (
           <p>אין שאלות חדשות!</p>
         ) : (
-          Object.entries(waitingNewQuestions).map((newQuestion) => {
-            const [key, { question, answer, level }] = newQuestion;
+          pendingQuestions.map((newQuestion) => {
+            const { id, question, answer, difficulty } = newQuestion;
             return (
-              <div className="m-4 mb-8" key={key}>
+              <div className="m-4 mb-8" key={id}>
                 <h2>{question}</h2>
-                <h2>{answer}</h2>
-                <h2>{level}</h2>
-                <button className="btn m-2" onClick={() => handleAddQuestionToDB(key)}>
+                <h2>{AnswerTypeInHebrew[answer]}</h2>
+                <h2>{DifficultyInHebrew[difficulty]}</h2>
+                <button className="btn m-2" onClick={() => handleAddQuestionToDB(id)}>
                   אשר
                 </button>
-                <button className="btn" onClick={() => handleRemoveWaitingQuestion(key)}>
+                <button className="btn" onClick={() => handleRemoveWaitingQuestion(id)}>
                   דחה
                 </button>
                 <a
@@ -85,7 +102,7 @@ export const Admin: NextPage = () => {
         )}
       </div>
 
-      {scoresSum && <p>Played Game: {scoresSum}</p>}
+      {sumTotalPlayed && <p>Played Game: {sumTotalPlayed}</p>}
     </div>
   );
 };

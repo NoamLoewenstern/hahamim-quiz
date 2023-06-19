@@ -1,23 +1,53 @@
 import { useForm } from "react-hook-form";
 
-import useIsMobile from "~/hooks/useIsMobile";
-import { addQuestion } from "~/firebase/lib/add-question";
+import { isMobile } from "react-device-detect";
 import { useGlobalLoadingSpinner } from "~/hooks/useLoadingSpinner";
-import "./AddQuestion.scss";
 import { useState } from "react";
-import { IRabbiType, RabbiTypeKeys } from "~/firebase/types";
 import { type NextPage } from "next";
 import Link from "next/link";
+import { api } from "~/utils/api";
+import {
+  AnswerEnum,
+  AnswerTypeInHebrew,
+  AnswerTypes,
+  Difficulties,
+  DifficultyEnum,
+  DifficultyInHebrew,
+  IAnswerType,
+  IDifficulty,
+} from "~/lib/db/types";
 
 const FormFields = {
-  question: "",
-  answer: "" as IRabbiType,
-  level: "" as "easy" | "medium" | "hard",
+  question: "" as string,
+  answer: "" as IAnswerType,
+  difficulty: "" as IDifficulty & string,
 };
 export const AddQuestion: NextPage = () => {
-  const isMobile = useIsMobile();
   const [addedQuestion, setAddedQuestion] = useState(false);
   const { open: openLoadingSpinner, close: closeLoadingSpinner } = useGlobalLoadingSpinner();
+  const addNewQuestion = api.game.requestAddNewQuestion.useMutation({
+    onMutate: () => {
+      openLoadingSpinner();
+    },
+    onSuccess: (data) => {
+      if (data.success) {
+        setAddedQuestion(true);
+        reset();
+        return;
+      }
+      if (data.error === "Duplicate question") {
+        alert("שאלה קיימת!");
+      }
+      return;
+    },
+    onError: (error) => {
+      console.error(error);
+      alert("שגיאה בשמירה!");
+    },
+    onSettled: () => {
+      closeLoadingSpinner();
+    },
+  });
 
   const {
     register,
@@ -29,26 +59,15 @@ export const AddQuestion: NextPage = () => {
     mode: "onBlur",
   });
 
-  const handleAddQuestionSubmit = async (values: typeof FormFields) => {
-    try {
-      openLoadingSpinner();
-      await addQuestion(values);
-      setAddedQuestion(true);
-      reset();
-    } catch (e) {
-      alert("שגיאה בשמירה!");
-    } finally {
-      closeLoadingSpinner();
-    }
-  };
-
   return (
     <>
       {!addedQuestion && (
         <form
           className="flex flex-col items-center justify-start p-4"
           autoComplete="off"
-          onSubmit={handleSubmit((data) => handleAddQuestionSubmit(data))}
+          onSubmit={handleSubmit((values) => {
+            addNewQuestion.mutate(values);
+          })}
         >
           <h2>הוסף שאלה</h2>
           <div className={`flex w-4/5 items-center justify-around ${isMobile ? "flex-col" : ""}`}>
@@ -72,17 +91,21 @@ export const AddQuestion: NextPage = () => {
                     className="text-box"
                     {...register("answer", {
                       required: true,
-                      validate: (value) => RabbiTypeKeys.includes(value),
+                      validate: (value) => AnswerTypes.includes(value),
                       disabled: !!errors?.question,
                     })}
                   >
                     <option value="" disabled hidden>
                       בחר תשובה
                     </option>
-                    <option value="תנא">תנא</option>
-                    <option value="אמורא">אמורא</option>
-                    <option value="ראשון">ראשון</option>
-                    <option value="אחרון">אחרון</option>
+                    <option value={AnswerEnum.TANA}>{AnswerTypeInHebrew[AnswerEnum.TANA]}</option>
+                    <option value={AnswerEnum.AMORA}>{AnswerTypeInHebrew[AnswerEnum.AMORA]}</option>
+                    <option value={AnswerEnum.RISHON}>
+                      {AnswerTypeInHebrew[AnswerEnum.RISHON]}
+                    </option>
+                    <option value={AnswerEnum.ACHARON}>
+                      {AnswerTypeInHebrew[AnswerEnum.ACHARON]}
+                    </option>
                   </select>
                   {errors.answer && <div className="error-place">תשובה לא אפשרית</div>}
                 </>
@@ -93,25 +116,31 @@ export const AddQuestion: NextPage = () => {
                   <select
                     defaultValue={""}
                     className="text-box"
-                    {...register("level", {
+                    {...register("difficulty", {
                       required: true,
-                      validate: (value) => ["easy", "medium", "hard"].includes(value),
+                      validate: (value) => Difficulties.includes(value),
                       disabled: !!errors?.question || !!errors?.answer,
                     })}
                   >
                     <option value="" disabled hidden>
                       בחר דרגת קושי
                     </option>
-                    <option value="easy">קל</option>
-                    <option value="medium">בינוני</option>
-                    <option value="hard">כבד</option>
+                    <option value={DifficultyEnum.EASY}>
+                      {DifficultyInHebrew[DifficultyEnum.EASY]}
+                    </option>
+                    <option value={DifficultyEnum.MEDIUM}>
+                      {DifficultyInHebrew[DifficultyEnum.MEDIUM]}
+                    </option>
+                    <option value={DifficultyEnum.HARD}>
+                      {DifficultyInHebrew[DifficultyEnum.HARD]}
+                    </option>
                   </select>
-                  {errors.level && <div className="error-place">תשובה לא אפשרית</div>}
+                  {errors.difficulty && <div className="error-place">תשובה לא אפשרית</div>}
                 </>
               )}
             </div>
           </div>
-          {isValid && dirtyFields["level"] && (
+          {isValid && dirtyFields["difficulty"] && (
             <input type="submit" className="btn mt-4" value="הוסף שאלה" />
           )}
         </form>
