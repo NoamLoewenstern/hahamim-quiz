@@ -47,7 +47,7 @@ model Record {
 
 model ScoreCount {
     id        String   @id @default(cuid())
-    score     Int
+    score     Int      @unique
     count     Int
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt

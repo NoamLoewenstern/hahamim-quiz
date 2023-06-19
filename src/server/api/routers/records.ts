@@ -1,7 +1,7 @@
-import { revalidatePath } from "next/cache";
 import { RecordEntry } from "~/lib/db/types";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { revalidatePathAPI } from "~/utils/revalidatePathAPI";
 
 export const recordsRouter = createTRPCRouter({
   isTopRank: publicProcedure
@@ -29,14 +29,14 @@ export const recordsRouter = createTRPCRouter({
       update: input,
       create: input,
     });
-    revalidatePath("/records");
+    revalidatePathAPI(["/records"]);
 
     return { success: true, data: input };
   }),
 
   getRecordPosition: publicProcedure
     .input(RecordEntry.pick({ score: true }))
-    .query(async ({ ctx, input }) => {
+    .query(async ({ ctx, input: { score } }) => {
       const {
         _sum: { count: sumTotalPlayed },
       } = await ctx.prisma.scoreCount.aggregate({
@@ -46,9 +46,10 @@ export const recordsRouter = createTRPCRouter({
         _sum: { count: sumBetterScore },
       } = await ctx.prisma.scoreCount.aggregate({
         _sum: { count: true },
-        where: { score: { gte: input.score } },
+        where: { score: { gte: score } },
       });
-      const position = (sumTotalPlayed || 0) - (sumBetterScore || 0);
+      const position = (sumBetterScore || 0) + 1;
+
       return { position, totalPlayed: sumTotalPlayed };
     }),
 
@@ -60,4 +61,15 @@ export const recordsRouter = createTRPCRouter({
     });
     return sumTotalPlayed || 0;
   }),
+
+  addAnotherPlayed: publicProcedure
+    .input(RecordEntry.pick({ score: true }))
+    .query(async ({ ctx, input: { score } }) => {
+      await ctx.prisma.scoreCount.upsert({
+        where: { score },
+        update: { count: { increment: 1 } },
+        create: { score, count: 1 },
+      });
+      return { success: true };
+    }),
 });

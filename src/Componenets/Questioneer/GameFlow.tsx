@@ -28,7 +28,9 @@ export default function GameFlow() {
 
   return (
     <div className="game-container">
-      <h3 className="self-center text-lg font-bold">{`רמת קושי: ${DifficultyInHebrew[""]}`}</h3>
+      <h3 className="self-center text-lg font-bold">{`רמת קושי: ${
+        DifficultyInHebrew[question.difficulty]
+      }`}</h3>
       <h3 className="self-center text-lg font-bold">{question.question}</h3>
       <div className="answer-btn-group">
         {AnswerTypes.map((answerOption, index) => (

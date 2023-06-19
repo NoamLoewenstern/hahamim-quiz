@@ -6,9 +6,10 @@ import { useQuizMachine } from "~/xstate-machines/quiz-machine";
 export default function EndGame() {
   const [state] = useQuizMachine();
   const score = state.context.score;
+  const scoreDevidedByTen = Math.floor(score / 10);
 
   const { data: { position, totalPlayed } = {} } = api.records.getRecordPosition.useQuery({
-    score,
+    score: scoreDevidedByTen,
   });
   const recordLocationText = !position ? "" : `${position} מתוך ${totalPlayed}`;
 

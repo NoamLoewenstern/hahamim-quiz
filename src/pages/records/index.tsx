@@ -36,7 +36,7 @@ export const getStaticProps: GetStaticProps<{
       scoresCount: scoresCountMap,
       sumTotalPlayed: sumTotalPlayed || 0,
     },
-    // revalidate: 60,
+    revalidate: false, // only on demand
   };
 };
 

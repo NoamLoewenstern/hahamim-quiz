@@ -5,6 +5,7 @@ export default function RegisterRecord({ score }: { score: number }) {
   const [name, setName] = useState("");
   const [addedRecord, setAddedRecord] = useState(false);
   const [error, setError] = useState("");
+  const scoreDevidedByTen = Math.floor(score / 10);
 
   const { data: isRecordInTopRank } = api.records.isTopRank.useQuery({ score });
   const addNewTopRecord = api.records.addNewTopRecord.useMutation({
@@ -18,13 +19,22 @@ export default function RegisterRecord({ score }: { score: number }) {
       setError(msg);
     },
   });
+  const { error: addPlayerError } = api.records.addAnotherPlayed.useQuery({
+    score: scoreDevidedByTen,
+  });
 
   const handleAddTopRecord = () => {
     addNewTopRecord.mutate({ score, name });
   };
 
-  if (!isRecordInTopRank) return null;
   if (error) return <div className="error-place m-6">{error}</div>;
+  if (addPlayerError)
+    return (
+      <div className="error-place m-6">
+        <p>הייתה בעיה בהוספת הניקוד שלך למאגר השחקנים</p>
+      </div>
+    );
+  if (!isRecordInTopRank) return null;
   return (
     <div className="m-6">
       {addedRecord && <p>השיא נרשם בהצלחה!</p>}
