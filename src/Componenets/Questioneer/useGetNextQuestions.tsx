@@ -1,41 +1,34 @@
 import { useState, useCallback } from "react";
 import { NUMBER_OF_QUESTIONS_FOR_EACH_LEVEL } from "~/config";
-import { asyncChain } from "~/utils/helpers";
-import { Difficulties, IQuestionEntry } from "~/lib/db/types";
-import { getQuestionsByDifficulty } from "~/lib/db/get-questions";
-
-export function getQuestionsIterators() {
-  const iters = Difficulties.map((level) =>
-    getQuestionsByDifficulty({
-      difficultyLevel: level,
-      numberOfQuestions: NUMBER_OF_QUESTIONS_FOR_EACH_LEVEL,
-    })
-  );
-  return asyncChain(...iters);
-}
-
-async function getNextQuestionFromIter(questionsIter: AsyncGenerator<IQuestionEntry, void>) {
-  const { value, done } = await questionsIter.next();
-  if (done || !value) {
-    return null;
-  }
-  return value;
-}
+import { Difficulties } from "~/lib/db/types";
+import { api } from "~/utils/api";
 
 export function useGetNextQuestions() {
-  const [questionsIter, setQuestionsIter] = useState(() => getQuestionsIterators());
+  const { mutateAsync: getRandomQuestion } = api.game.getRandomQuestionsByDifficulty.useMutation();
 
-  const reset = useCallback(() => {
-    setQuestionsIter(getQuestionsIterators());
+  async function* getQuestionsIterator() {
+    for (const difficulty of Difficulties) {
+      for (let i = 0; i < NUMBER_OF_QUESTIONS_FOR_EACH_LEVEL; i++) {
+        const questions = await getRandomQuestion({ count: 1, difficulty });
+        yield questions[0];
+      }
+    }
+    yield null;
+  }
+
+  const [questionsIter, setQuestionsIter] = useState(() => getQuestionsIterator());
+
+  const resetIterQuestions = useCallback(() => {
+    setQuestionsIter(getQuestionsIterator());
   }, []);
 
   const getNextQuestion = useCallback(() => {
     try {
-      return getNextQuestionFromIter(questionsIter);
+      return questionsIter.next().then((result) => result.value);
     } catch (error) {
       console.error(error);
     }
   }, [questionsIter]);
 
-  return { getNextQuestion, reset };
+  return { getNextQuestion, reset: resetIterQuestions };
 }
