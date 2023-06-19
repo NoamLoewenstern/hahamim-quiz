@@ -22,6 +22,8 @@ export const env = createEnv({
     // DISCORD_CLIENT_SECRET: z.string(),
     GOOGLE_CLIENT_ID: z.string().min(1),
     GOOGLE_CLIENT_SECRET: z.string().min(1),
+
+    REVALIDATION_TOKEN: z.string().min(1),
   },
 
   /**
@@ -44,6 +46,7 @@ export const env = createEnv({
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+    REVALIDATION_TOKEN: process.env.REVALIDATION_TOKEN,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.
