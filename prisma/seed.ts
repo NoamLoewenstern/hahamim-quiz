@@ -1,5 +1,4 @@
 import { prisma } from "~/server/db";
-import seedData from "./seed.json";
 import { z } from "zod";
 import { QuestionEntry, RecordEntry, ScoreEntry } from "~/lib/db/types";
 
@@ -11,6 +10,8 @@ const SeedData = z.object({
 });
 
 async function seedDevelopment() {
+  const seedData = await import("./seed.json");
+
   //! drops and re-creates the database
   const seedEntries = SeedData.parse(seedData);
   console.log(
@@ -28,14 +29,8 @@ async function seedDevelopment() {
   ]);
   console.log("Seeding Complete!");
 }
-// const options = {
-//   environment: { type: "string" },
-// } as const;
 
 async function main() {
-  // const {
-  //   values: { environment },
-  // } = parseArgs({ options });
   const { environment } = process.env;
 
   try {
@@ -48,9 +43,7 @@ async function main() {
         await prisma.$connect();
         break;
       default:
-        console.log("No 'environment' Env ariable specified");
-
-        break;
+        throw new Error("No 'environment' Env ariable specified");
     }
   } catch (e) {
     console.error(e);
