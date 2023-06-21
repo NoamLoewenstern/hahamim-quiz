@@ -15,7 +15,7 @@ export default function Questioneer() {
     },
   });
 
-  const initState = state.matches("init");
+  const initState = state.matches("init") || state.matches("readyForFirstQuestion");
   const endState = state.matches("end");
   const runningState = state.matches("question") || state.matches("feedback");
 

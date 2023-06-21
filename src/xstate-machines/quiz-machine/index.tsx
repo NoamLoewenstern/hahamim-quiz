@@ -1,4 +1,4 @@
-import { createMachine, assign } from "xstate";
+import { createMachine, assign, raise, type InvokeConfig } from "xstate";
 import { z } from "zod";
 import { calculateScore } from "./utils";
 import { type IAnswerType, type IQuestionEntry, QuestionEntry } from "~/lib/db/types";
@@ -6,6 +6,8 @@ import { useContext } from "react";
 import { MachineContext } from "./machineContext";
 
 interface QuizContext {
+  tryTimes: number;
+  nextQuestion: IQuestionEntry | null;
   currentQuestion: IQuestionEntry | null;
   answeredCorrectly: boolean;
   answered: IAnswerType | null;
@@ -25,6 +27,7 @@ export type IAnswerOption = z.infer<typeof AnswerOption>;
 
 const enumQuizEventTypes = {
   START: "START",
+  CHECK_QUESTION_VALID: "CHECK_QUESTION_VALID",
   ANSWER: "ANSWER",
   NEXT: "NEXT",
   RESET: "RESET",
@@ -32,14 +35,19 @@ const enumQuizEventTypes = {
 } as const;
 type QuizEventTypes = (typeof enumQuizEventTypes)[keyof typeof enumQuizEventTypes];
 
-type QuizEvent = {
-  type: QuizEventTypes;
-  answer?: IAnswerType;
-  questions?: IQuestionEntry[];
+type QuizAnswerEvent = {
+  type: Extract<QuizEventTypes, "ANSWER">;
+  answer: IAnswerType;
 };
+type QuizEvent =
+  | {
+      type: Exclude<QuizEventTypes, "ANSWER">;
+    }
+  | QuizAnswerEvent;
 
-const QuizStateTypes = {
+const QuizStates = {
   init: "init",
+  readyForFirstQuestion: "readyForFirstQuestion",
   loadQuestion: "loadQuestion",
   checkQuestionValid: "checkQuestionValid",
   question: "question",
@@ -49,27 +57,24 @@ const QuizStateTypes = {
   error: "error",
 } as const;
 
-type QuizStateTypes = {
-  value: (typeof QuizStateTypes)[keyof typeof QuizStateTypes];
+type QuizStates = {
+  value: (typeof QuizStates)[keyof typeof QuizStates];
   context: QuizContext;
 };
 
 const QuizActionTypes = {
   incrementElapsed: "incrementElapsed",
   resetElapsed: "resetElapsed",
-  calculateScoreForQuestion: "calculateScoreForQuestion",
-  assignAnsweredCorrectly: "assignAnsweredCorrectly",
+  onAnswer: "onAnswer",
 } as const;
 
-// type QuizActionType = (typeof QuizActionTypes)[keyof typeof QuizActionTypes];
-// type QuizAction = {
-//   type: QuizActionType;
-// };
 type QuizService = {
   timerService: (context: QuizContext) => (callback: (event: QuizEvent) => void) => () => void;
 } & { [key: string]: { data: unknown } };
 
 const initContext: QuizContext = {
+  tryTimes: 5,
+  nextQuestion: null,
   currentQuestion: null,
   answeredCorrectly: false,
   answered: null,
@@ -80,160 +85,169 @@ const initContext: QuizContext = {
   interval: 51, // interval for sending TICK events (in seconds)
   error: null,
 };
-export const quizMachine = createMachine<QuizContext, QuizEvent, QuizStateTypes, QuizService>(
-  {
-    predictableActionArguments: true,
-    id: "quiz",
-    initial: QuizStateTypes.init,
-    context: initContext,
-    states: {
-      init: {
-        entry: assign(initContext),
-        on: {
-          START: {
-            target: QuizStateTypes.loadQuestion,
+const quizMachineFactory = () =>
+  createMachine<QuizContext, QuizEvent, QuizStates, QuizService>(
+    {
+      predictableActionArguments: true,
+      id: "quiz",
+      initial: QuizStates.init,
+      context: initContext,
+      states: {
+        init: {
+          entry: assign(initContext),
+          invoke: invokeGetNextQuestion({ onDoneTarget: QuizStates.readyForFirstQuestion }),
+        },
+        readyForFirstQuestion: {
+          on: {
+            START: {
+              target: QuizStates.loadQuestion,
+            },
           },
         },
-      },
 
-      loadQuestion: {
-        invoke: {
-          src: "getNextQuestion", // passed in as a deps service
-          onDone: {
-            target: QuizStateTypes.checkQuestionValid,
-            actions: assign({
-              currentQuestion: (_, event) => event.data as IQuestionEntry,
+        loadQuestion: {
+          entry: [
+            assign({
+              currentQuestion: (ctx) => ctx.nextQuestion,
               questionNumber: (ctx) => ctx.questionNumber + 1,
+              nextQuestion: null,
             }),
-          },
-          onError: {
-            target: QuizStateTypes.error,
-            actions: assign({ error: (_, event) => event.data as string }),
-          },
-        },
-      },
-
-      checkQuestionValid: {
-        always: [
-          // always transition to the next state
-          {
-            target: QuizStateTypes.end, // after last question
-            cond: (ctx) => ctx.currentQuestion === null,
-          },
-          {
-            target: QuizStateTypes.question, // durring the quiz
-            cond: (ctx) => QuestionEntry.safeParse(ctx.currentQuestion).success,
-          },
-          { target: QuizStateTypes.error }, // default to error
-        ],
-      },
-
-      question: {
-        entry: QuizActionTypes.resetElapsed,
-        invoke: { src: "timerService" },
-        on: {
-          TICK: {
-            actions: QuizActionTypes.incrementElapsed,
-          },
-          ANSWER: {
-            target: QuizStateTypes.feedback,
-            actions: QuizActionTypes.incrementElapsed,
+            raise("CHECK_QUESTION_VALID"),
+          ],
+          on: {
+            CHECK_QUESTION_VALID: [
+              {
+                target: QuizStates.end, // after last question
+                cond: (ctx) => ctx.currentQuestion === null,
+              },
+              {
+                target: QuizStates.question, // durring the quiz
+                cond: (ctx) => QuestionEntry.safeParse(ctx.currentQuestion).success,
+              },
+              { target: QuizStates.error }, // default to error
+            ],
           },
         },
-      },
 
-      feedback: {
-        entry: [QuizActionTypes.calculateScoreForQuestion, QuizActionTypes.assignAnsweredCorrectly],
-        on: {
-          NEXT: {
-            target: QuizStateTypes.loadQuestion,
+        question: {
+          entry: QuizActionTypes.resetElapsed,
+          invoke: [{ src: "timerService" }, invokeGetNextQuestion()],
+          on: {
+            TICK: {
+              internal: true,
+              actions: QuizActionTypes.incrementElapsed,
+            },
+            ANSWER: {
+              target: QuizStates.feedback,
+              actions: [QuizActionTypes.incrementElapsed, QuizActionTypes.onAnswer],
+            },
           },
         },
-      },
 
-      end: {
-        on: {
-          RESET: {
-            target: QuizStateTypes.reset,
+        feedback: {
+          on: {
+            NEXT: {
+              target: QuizStates.loadQuestion,
+            },
           },
         },
-      },
 
-      reset: {
-        invoke: {
-          src: "invalidateQuestions",
-          onDone: {
-            target: QuizStateTypes.init,
-          },
-          onError: {
-            target: QuizStateTypes.error,
-            actions: assign({ error: (_, event) => event.data as string }),
+        end: {
+          on: {
+            RESET: {
+              target: QuizStates.reset,
+            },
           },
         },
-      },
 
-      error: {
-        // log the error
-        entry: (context, event) => {
-          console.error(`Error: ${context.error ?? "unknown"}`);
-          console.error("Context", context);
-          console.error("event", event);
+        reset: {
+          invoke: {
+            src: "invalidateQuestions",
+            onDone: {
+              target: QuizStates.init,
+            },
+            onError: {
+              target: QuizStates.error,
+              actions: assign({ error: (_, event) => event.data as string }),
+            },
+          },
         },
-        type: "final",
+
+        error: {
+          // log the error
+          entry: (context, event) => {
+            console.error(`Error: ${context.error ?? "unknown"}`);
+            console.error("Context", context);
+            console.error("event", event);
+          },
+          type: "final",
+        },
       },
     },
-  },
-  {
-    actions: {
-      [QuizActionTypes.incrementElapsed]: assign({
-        elapsedTime: (context) => Date.now() - context.startTime,
-      }),
-      [QuizActionTypes.resetElapsed]: assign({
-        startTime: () => Date.now(),
-        elapsedTime: 0,
-      }),
-      [QuizActionTypes.calculateScoreForQuestion]: assign({
-        score: (context, event) => {
-          const { answer } = event;
-          if (answer === undefined) throw new Error("Answer is undefined");
-          if (!context.currentQuestion) throw new Error("Current question is null");
-          if (answer === context.currentQuestion.answer) {
-            return context.score + calculateScore({ elapsedTime: context.elapsedTime });
-          }
-          return context.score;
-        },
-      }),
-      [QuizActionTypes.assignAnsweredCorrectly]: assign({
-        answered: (_, event) => {
-          if (event.answer === undefined) throw new Error("Answer is undefined");
-          return event.answer;
-        },
-        answeredCorrectly: (ctx, event) => {
-          return event.answer === ctx.currentQuestion?.answer;
-        },
-      }),
-    },
-    services: {
-      timerService: (context) => (callback) => {
-        const interval = setInterval(() => {
-          callback("TICK");
-        }, context.interval);
-        return () => clearInterval(interval);
+    {
+      actions: {
+        [QuizActionTypes.incrementElapsed]: assign({
+          elapsedTime: (context) => Date.now() - context.startTime,
+        }),
+        [QuizActionTypes.resetElapsed]: assign({
+          startTime: () => Date.now(),
+          elapsedTime: 0,
+        }),
+        [QuizActionTypes.onAnswer]: assign({
+          score: (context, { type, answer }: QuizAnswerEvent) => {
+            if (type !== "ANSWER") throw new Error("Event type must come from ANSWER");
+            if (answer === context.currentQuestion?.answer) {
+              return context.score + calculateScore({ elapsedTime: context.elapsedTime });
+            }
+            return context.score;
+          },
+          answered: (_, event) => event.answer,
+          answeredCorrectly: (ctx, event) => {
+            return event.answer === ctx.currentQuestion?.answer;
+          },
+        }),
       },
-      // eslint-disable-next-line @typescript-eslint/require-await
-      getNextQuestion: async (_) => {
-        throw new Error(
-          "getNextQuestion is not implemented. Must be passed in as a service as deps injection"
-        );
+      services: {
+        timerService: (context) => (callback) => {
+          const interval = setInterval(() => {
+            callback("TICK");
+          }, context.interval);
+          return () => clearInterval(interval);
+        },
+        // eslint-disable-next-line @typescript-eslint/require-await
+        getNextQuestion: async (_) => {
+          throw new Error(
+            "getNextQuestion is not implemented. Must be passed in as a service as deps injection"
+          );
+        },
+        // eslint-disable-next-line @typescript-eslint/require-await
+        invalidateQuestions: async (_) => {
+          throw new Error(
+            "invalidateQuestions is not implemented. Must be passed in as a service as deps injection"
+          );
+        },
       },
-      // eslint-disable-next-line @typescript-eslint/require-await
-      invalidateQuestions: async (_) => {
-        throw new Error(
-          "invalidateQuestions is not implemented. Must be passed in as a service as deps injection"
-        );
-      },
-    },
-  }
-);
+    }
+  );
 
+function invokeGetNextQuestion({ onDoneTarget }: { onDoneTarget?: string } = {}): InvokeConfig<
+  QuizContext,
+  QuizEvent
+> {
+  return {
+    src: "getNextQuestion", // passed in as a deps service
+    onDone: {
+      target: onDoneTarget,
+      actions: assign({
+        nextQuestion: (_, event) => event.data as IQuestionEntry,
+      }),
+    },
+    onError: {
+      target: QuizStates.error,
+      actions: assign({ error: (_, event) => event.data as string }),
+    },
+  };
+}
+
+export const quizMachine = quizMachineFactory();
 export const useQuizMachine = () => useContext(MachineContext);
