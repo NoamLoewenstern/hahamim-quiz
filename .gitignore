@@ -115,3 +115,4 @@ yarn-error.log*
 .env*.local
 prisma/seed.json
 prisma/test.ts
+.env.prod
