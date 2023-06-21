@@ -1,5 +1,4 @@
 import { prisma } from "~/server/db";
-import fs from "fs";
 import { z } from "zod";
 import { QuestionEntry, RecordEntry, ScoreEntry } from "~/lib/db/types";
 
@@ -10,13 +9,7 @@ const SeedData = z.object({
   // users: z.array(),
 });
 async function seedDevelopment() {
-  const SEED_DATA_PATH = "./seed.json";
-  if (!fs.existsSync(SEED_DATA_PATH)) {
-    console.warn("No seed data found, skipping seeding");
-    return;
-  }
-
-  const seedData = await import(SEED_DATA_PATH);
+  const seedData = await import("./seed.json");
 
   //! drops and re-creates the database
   const seedEntries = SeedData.parse(seedData);
