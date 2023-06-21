@@ -9,7 +9,9 @@ const SeedData = z.object({
   // users: z.array(),
 });
 async function seedDevelopment() {
-  const seedData = await import("./seed.json");
+  const seedFilePath = "./seed.json";
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const seedData = await import(seedFilePath);
 
   //! drops and re-creates the database
   const seedEntries = SeedData.parse(seedData);
