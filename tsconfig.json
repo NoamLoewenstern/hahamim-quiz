@@ -12,7 +12,7 @@
     "checkJs": true,
     "skipLibCheck": true,
     /* Bundler mode */
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "moduleResolution": "node",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
