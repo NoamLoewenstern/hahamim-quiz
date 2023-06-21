@@ -65,11 +65,7 @@ export const AddQuestion: NextPage = () => {
         <form
           className="flex flex-col items-center justify-start p-4"
           autoComplete="off"
-          onSubmit={() =>
-            handleSubmit((values) => {
-              addNewQuestion.mutate(values);
-            })
-          }
+          onSubmit={void handleSubmit((values) => addNewQuestion.mutate(values))}
         >
           <h2>הוסף שאלה</h2>
           <div className={`flex w-4/5 items-center justify-around ${isMobile ? "flex-col" : ""}`}>
