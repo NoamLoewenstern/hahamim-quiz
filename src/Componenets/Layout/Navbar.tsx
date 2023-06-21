@@ -7,6 +7,7 @@ import useCurrentPageRoute from "~/hooks/useCurrentPageRoute";
 import useUser from "~/hooks/useUser";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 function Header() {
   const { title, subtitle } = useTitle();
@@ -22,7 +23,7 @@ function Logo() {
   return (
     <div className="logo-container">
       <Link href="/">
-        <img
+        <Image
           src="images/white.png"
           style={{ backgroundColor: "transparent" }}
           className="nav-logo-image"
@@ -127,7 +128,9 @@ export default function Navbar() {
                 className="nav-links"
                 onClick={() => {
                   hideMobileMenu();
-                  signOut().then(() => window.location.reload());
+                  void signOut()
+                    .then(() => window.location.reload())
+                    .catch();
                 }}
               >
                 התנתק
