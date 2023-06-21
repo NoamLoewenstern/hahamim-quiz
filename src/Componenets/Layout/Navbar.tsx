@@ -1,7 +1,7 @@
 import useTitle from "~/hooks/useTitle";
 import { signIn, signOut } from "next-auth/react";
 import { isMobile } from "react-device-detect";
-
+import whiteLogo from "~/assets/images/white.png";
 import { useState } from "react";
 import useCurrentPageRoute from "~/hooks/useCurrentPageRoute";
 import useUser from "~/hooks/useUser";
@@ -24,7 +24,7 @@ function Logo() {
     <div className="logo-container">
       <Link href="/">
         <Image
-          src="images/white.png"
+          src={whiteLogo}
           style={{ backgroundColor: "transparent" }}
           className="nav-logo-image"
           alt=""
