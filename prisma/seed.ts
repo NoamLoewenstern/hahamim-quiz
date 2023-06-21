@@ -1,4 +1,5 @@
 import { prisma } from "~/server/db";
+import fs from "fs";
 import { z } from "zod";
 import { QuestionEntry, RecordEntry, ScoreEntry } from "~/lib/db/types";
 
@@ -8,9 +9,14 @@ const SeedData = z.object({
   scoresCount: z.array(ScoreEntry),
   // users: z.array(),
 });
-
 async function seedDevelopment() {
-  const seedData = await import("./seed.json");
+  const SEED_DATA_PATH = "./seed.json";
+  if (!fs.existsSync(SEED_DATA_PATH)) {
+    console.warn("No seed data found, skipping seeding");
+    return;
+  }
+
+  const seedData = await import(SEED_DATA_PATH);
 
   //! drops and re-creates the database
   const seedEntries = SeedData.parse(seedData);
@@ -27,7 +33,6 @@ async function seedDevelopment() {
     prisma.record.createMany({ data: seedEntries.records }),
     prisma.scoreCount.createMany({ data: seedEntries.scoresCount }),
   ]);
-  console.log("Seeding Complete!");
 }
 
 async function main() {
@@ -38,6 +43,8 @@ async function main() {
       case "development":
         await prisma.$connect();
         await seedDevelopment();
+        console.log("Seeding Complete!");
+
         break;
       case "test":
         await prisma.$connect();
@@ -51,4 +58,7 @@ async function main() {
   await prisma.$disconnect();
 }
 
-main();
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});
