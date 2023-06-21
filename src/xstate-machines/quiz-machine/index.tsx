@@ -1,7 +1,7 @@
 import { createMachine, assign } from "xstate";
 import { z } from "zod";
 import { calculateScore } from "./utils";
-import { IAnswerType, IQuestionEntry, QuestionEntry } from "~/lib/db/types";
+import { type IAnswerType, type IQuestionEntry, QuestionEntry } from "~/lib/db/types";
 import { useContext } from "react";
 import { MachineContext } from "./machineContext";
 
@@ -61,12 +61,13 @@ const QuizActionTypes = {
   assignAnsweredCorrectly: "assignAnsweredCorrectly",
 } as const;
 
-type QuizAction = {
-  type: (typeof QuizActionTypes)[keyof typeof QuizActionTypes];
-};
+// type QuizActionType = (typeof QuizActionTypes)[keyof typeof QuizActionTypes];
+// type QuizAction = {
+//   type: QuizActionType;
+// };
 type QuizService = {
   timerService: (context: QuizContext) => (callback: (event: QuizEvent) => void) => () => void;
-} & { [key: string]: { data: any } };
+} & { [key: string]: { data: unknown } };
 
 const initContext: QuizContext = {
   currentQuestion: null,
@@ -101,13 +102,13 @@ export const quizMachine = createMachine<QuizContext, QuizEvent, QuizStateTypes,
           onDone: {
             target: QuizStateTypes.checkQuestionValid,
             actions: assign({
-              currentQuestion: (_, event) => event.data,
+              currentQuestion: (_, event) => event.data as IQuestionEntry,
               questionNumber: (ctx) => ctx.questionNumber + 1,
             }),
           },
           onError: {
             target: QuizStateTypes.error,
-            actions: assign({ error: (_, event) => event.data }),
+            actions: assign({ error: (_, event) => event.data as string }),
           },
         },
       },
@@ -166,7 +167,7 @@ export const quizMachine = createMachine<QuizContext, QuizEvent, QuizStateTypes,
           },
           onError: {
             target: QuizStateTypes.error,
-            actions: assign({ error: (_, event) => event.data }),
+            actions: assign({ error: (_, event) => event.data as string }),
           },
         },
       },
@@ -174,7 +175,7 @@ export const quizMachine = createMachine<QuizContext, QuizEvent, QuizStateTypes,
       error: {
         // log the error
         entry: (context, event) => {
-          console.error(`Error: ${context.error}`);
+          console.error(`Error: ${context.error ?? "unknown"}`);
           console.error("Context", context);
           console.error("event", event);
         },
@@ -219,12 +220,14 @@ export const quizMachine = createMachine<QuizContext, QuizEvent, QuizStateTypes,
         }, context.interval);
         return () => clearInterval(interval);
       },
-      getNextQuestion: async (context) => {
+      // eslint-disable-next-line @typescript-eslint/require-await
+      getNextQuestion: async (_) => {
         throw new Error(
           "getNextQuestion is not implemented. Must be passed in as a service as deps injection"
         );
       },
-      invalidateQuestions: async (context) => {
+      // eslint-disable-next-line @typescript-eslint/require-await
+      invalidateQuestions: async (_) => {
         throw new Error(
           "invalidateQuestions is not implemented. Must be passed in as a service as deps injection"
         );

@@ -1,6 +1,6 @@
 import ScoresChart from "~/Componenets/ScoresChart";
-import { Record as IRecord, ScoreCount } from "@prisma/client";
-import { GetStaticProps, InferGetStaticPropsType, type NextPage } from "next";
+import { type Record as IRecord, type ScoreCount } from "@prisma/client";
+import { type GetStaticProps, type InferGetStaticPropsType, type NextPage } from "next";
 import { prisma } from "~/server/db";
 
 export const getStaticProps: GetStaticProps<{
@@ -16,13 +16,7 @@ export const getStaticProps: GetStaticProps<{
     select: { score: true, count: true },
     orderBy: { score: "asc" },
   });
-  const scoresCountMap: Record<ScoreCount["score"], ScoreCount["count"]> = scoresCount.reduce(
-    (acc, curr) => {
-      acc[curr.score] = curr.count;
-      return acc;
-    },
-    {}
-  );
+  const scoresCountMap = Object.fromEntries(scoresCount.map((score) => [score.score, score.count]));
 
   const {
     _sum: { count: sumTotalPlayed },

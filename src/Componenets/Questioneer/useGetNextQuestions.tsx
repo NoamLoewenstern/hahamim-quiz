@@ -18,9 +18,7 @@ export function useGetNextQuestions() {
 
   const [questionsIter, setQuestionsIter] = useState(() => getQuestionsIterator());
 
-  const resetIterQuestions = useCallback(() => {
-    setQuestionsIter(getQuestionsIterator());
-  }, []);
+  const resetIterQuestions = () => setQuestionsIter(getQuestionsIterator());
 
   const getNextQuestion = useCallback(() => {
     try {

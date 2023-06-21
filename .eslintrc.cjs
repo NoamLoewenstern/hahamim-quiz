@@ -31,7 +31,7 @@ const config = {
     "next/core-web-vitals",
     "prettier",
   ],
-  plugins: ["@typescript-eslint", "autofix", "prettier"],
+  plugins: ["@typescript-eslint", "prettier"],
   rules: {
     "@typescript-eslint/consistent-type-imports": [
       "warn",

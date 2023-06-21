@@ -1,10 +1,10 @@
 import { LoadingSpinnerModal } from "~/hooks/useLoadingSpinner";
 import { useEffect } from "react";
-import { GetServerSideProps, type NextPage, InferGetServerSidePropsType } from "next";
+import { type GetServerSideProps, type NextPage, type InferGetServerSidePropsType } from "next";
 import { api } from "~/utils/api";
 import { AnswerTypeInHebrew, DifficultyInHebrew } from "~/lib/db/types";
 import { getServerAuthSession } from "~/server/auth";
-import { Session } from "next-auth";
+import { type Session } from "next-auth";
 
 export const getServerSideProps: GetServerSideProps<{
   adminUser: Session["user"];
@@ -39,12 +39,12 @@ export const Admin: NextPage<Props> = () => {
   const { data: sumTotalPlayed } = api.records.getSumTotalPlayed.useQuery();
   const approveQuestion = api.admin.approveQuestion.useMutation({
     onSuccess: () => {
-      refetchWaitingQuestions();
+      void refetchWaitingQuestions();
     },
   });
   const deleteQuestion = api.admin.deleteQuestion.useMutation({
     onSuccess: () => {
-      refetchWaitingQuestions();
+      void refetchWaitingQuestions();
     },
   });
   const error = waitingQuestionsError || approveQuestion.error || deleteQuestion.error || null;

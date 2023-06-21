@@ -11,7 +11,7 @@ export default function Questioneer() {
   const [state, send, service] = useMachine(quizMachine, {
     services: {
       getNextQuestion: async () => getNextQuestion(),
-      invalidateQuestions: async () => resetQuestionsIters(),
+      invalidateQuestions: async () => Promise.resolve(resetQuestionsIters()),
     },
   });
 

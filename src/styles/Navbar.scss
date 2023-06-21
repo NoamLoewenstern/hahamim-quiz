@@ -8,7 +8,6 @@
   /* z-index: 10; */
   background: #0294a2;
 
-
   .logo-container {
     position: absolute;
     top: 20%;
@@ -35,8 +34,6 @@
     width: 70%;
     max-width: 70%;
 
-
-
     .nav-menu {
       flex-grow: 8;
       width: 0;
@@ -59,10 +56,9 @@
           font-size: 1.05rem;
         }
 
-        &:hover>.nav-links:after {
+        &:hover > .nav-links:after {
           transform: scaleX(1);
         }
-
 
         .nav-links {
           font-size: 1.4rem;
@@ -80,22 +76,15 @@
             border-bottom: 1px solid #fff;
             transform: scaleX(0);
             transition: transform 150ms ease-in-out;
-
           }
 
           &.active-page:after {
             transform: scaleX(1);
           }
-
         }
-
       }
-
     }
   }
-
-
-
 }
 
 @media screen and (max-width: 810px) {
@@ -157,17 +146,10 @@
               }
             }
           }
-
-
-
         }
       }
     }
-
   }
-
-
-
 
   #mobile-menu-hamburger-btn {
     position: absolute;
@@ -189,9 +171,7 @@
       border-radius: 3rem;
     }
 
-
     &.is-active {
-
       .bar:nth-child(2) {
         opacity: 0;
       }
@@ -204,9 +184,5 @@
         transform: translateY(-11px) rotate(-45deg);
       }
     }
-
-
   }
-
-
 }

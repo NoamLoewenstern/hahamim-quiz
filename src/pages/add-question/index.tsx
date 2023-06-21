@@ -13,8 +13,8 @@ import {
   Difficulties,
   DifficultyEnum,
   DifficultyInHebrew,
-  IAnswerType,
-  IDifficulty,
+  type IAnswerType,
+  type IDifficulty,
 } from "~/lib/db/types";
 
 const FormFields = {
@@ -65,9 +65,11 @@ export const AddQuestion: NextPage = () => {
         <form
           className="flex flex-col items-center justify-start p-4"
           autoComplete="off"
-          onSubmit={handleSubmit((values) => {
-            addNewQuestion.mutate(values);
-          })}
+          onSubmit={() =>
+            handleSubmit((values) => {
+              addNewQuestion.mutate(values);
+            })
+          }
         >
           <h2>הוסף שאלה</h2>
           <div className={`flex w-4/5 items-center justify-around ${isMobile ? "flex-col" : ""}`}>
@@ -79,7 +81,7 @@ export const AddQuestion: NextPage = () => {
                 {...register("question", {
                   required: true,
                   validate: (value) => /^[^A-Za-z]+$/.test(value),
-                  onChange: () => trigger("question"),
+                  onChange: () => void trigger("question"),
                 })}
               />
               {errors.question && <div className="error-place">מותר רק שמות בעברית</div>}

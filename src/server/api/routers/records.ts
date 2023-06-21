@@ -29,7 +29,7 @@ export const recordsRouter = createTRPCRouter({
       update: input,
       create: input,
     });
-    revalidatePathAPI(["/records"]);
+    await revalidatePathAPI(["/records"]);
 
     return { success: true, data: input };
   }),
@@ -37,7 +37,7 @@ export const recordsRouter = createTRPCRouter({
   getRecordPosition: publicProcedure
     .input(RecordEntry.pick({ score: true }))
     .query(async ({ ctx, input: { score } }) => {
-      const {
+      let {
         _sum: { count: sumTotalPlayed },
       } = await ctx.prisma.scoreCount.aggregate({
         _sum: { count: true },
@@ -48,6 +48,7 @@ export const recordsRouter = createTRPCRouter({
         _sum: { count: true },
         where: { score: { gte: score } },
       });
+      sumTotalPlayed ||= 0;
       const position = (sumBetterScore || 0) + 1;
 
       return { position, totalPlayed: sumTotalPlayed };

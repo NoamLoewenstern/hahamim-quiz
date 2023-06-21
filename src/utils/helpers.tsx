@@ -42,17 +42,17 @@ export function getRandomIntegers(
 
 export function* chain<T>(...iterables: Iterable<T>[]) {
   // Loop through each iterable
-  for (let iterable of iterables) {
+  for (const iterable of iterables) {
     // Loop through each value of the iterable
-    for (let value of iterable) {
+    for (const value of iterable) {
       // Yield the value
       yield value;
     }
   }
 }
 export async function* asyncChain<T>(...iterables: AsyncIterable<T>[]) {
-  for (let iterable of iterables) {
-    for await (let value of iterable) {
+  for (const iterable of iterables) {
+    for await (const value of iterable) {
       yield value;
     }
   }

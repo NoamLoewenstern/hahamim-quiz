@@ -1,4 +1,4 @@
-import { NextApiRequest, NextApiResponse } from "next";
+import { type NextApiRequest, type NextApiResponse } from "next";
 import { env } from "~/env.mjs";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -10,7 +10,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const paths = (req.query.paths as string).split(",");
 
-    await Promise.all(paths.map(async (path) => res.revalidate(path)));
+    for (const path of paths) {
+      await res.revalidate(path);
+    }
 
     return res.json({ revalidated: true });
   } catch (err) {

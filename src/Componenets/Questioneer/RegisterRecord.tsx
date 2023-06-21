@@ -15,7 +15,7 @@ export default function RegisterRecord({ score }: { score: number }) {
       setName("");
     },
     onError: (error) => {
-      const msg = error instanceof Error ? error.message : (error as any).toString();
+      const msg = error instanceof Error ? error.message : error.toString();
       setError(msg);
     },
   });

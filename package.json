@@ -6,8 +6,8 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
-    "lint": "next lint --report-unused-disable-directives error --max-warnings 0",
-    "lint:no-warnings": "next lint --max-warnings 0",
+    "lint": "next lint --report-unused-disable-directives error",
+    "lint:no-warnings": "next lint --report-unused-disable-directives error --max-warnings 0",
     "postinstall": "prisma generate",
     "start": "next start"
   },

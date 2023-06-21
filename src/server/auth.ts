@@ -1,10 +1,9 @@
-import { signIn } from "next-auth/react";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { type GetServerSidePropsContext } from "next";
 import { getServerSession, type NextAuthOptions, type DefaultSession } from "next-auth";
 import { env } from "~/env.mjs";
 import CredentialsProvider from "next-auth/providers/credentials";
-import GoogleProvider, { GoogleProfile } from "next-auth/providers/google";
+import GoogleProvider from "next-auth/providers/google";
 
 import { prisma } from "~/server/db";
 
@@ -24,7 +23,7 @@ declare module "next-auth" {
       role: UserRole;
     } & DefaultSession["user"];
   }
-  interface User {}
+  // interface User {}
 }
 
 /**
@@ -46,7 +45,7 @@ export const authOptions: NextAuthOptions = {
         },
       };
     },
-    signIn: async ({ account, profile }) => {
+    signIn: ({ account, profile }) => {
       if (!account || !profile) return false; // works for oauth providers, like google
       // if (account.provider === "google") {
       //   const gProfile = profile as GoogleProfile;

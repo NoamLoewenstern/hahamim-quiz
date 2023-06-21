@@ -1,12 +1,16 @@
 import Chart from "chart.js/auto";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 export default function ScoresChart({ data }: { data: Record<number | string, number> }) {
   // make all keys * 10
-  const ScoreData = Object.entries(data).reduce((acc, [key, value]) => {
-    acc[Number(key) * 10] = value;
-    return acc;
-  }, {} as Record<number, number>);
+  const ScoreData = useMemo(
+    () =>
+      Object.entries(data).reduce((acc, [key, value]) => {
+        acc[Number(key) * 10] = value;
+        return acc;
+      }, {} as Record<number, number>),
+    [data]
+  );
 
   useEffect(() => {
     const cartElement = document.getElementById("line-chart");
@@ -31,7 +35,7 @@ export default function ScoresChart({ data }: { data: Record<number | string, nu
     return () => {
       chart.destroy();
     };
-  }, []);
+  }, [ScoreData]);
 
   return <canvas id="line-chart"></canvas>;
 }

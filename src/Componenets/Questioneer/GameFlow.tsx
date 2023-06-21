@@ -1,7 +1,12 @@
 import { useEffect, useRef } from "react";
 import { NUMBER_OF_QUESTIONS_TOTAL } from "~/config";
 import { getFormatedTime } from "~/xstate-machines/quiz-machine/utils";
-import { AnswerTypeInHebrew, AnswerTypes, DifficultyInHebrew, IAnswerType } from "~/lib/db/types";
+import {
+  AnswerTypeInHebrew,
+  AnswerTypes,
+  DifficultyInHebrew,
+  type IAnswerType,
+} from "~/lib/db/types";
 import { useQuizMachine } from "~/xstate-machines/quiz-machine";
 
 export default function GameFlow() {
@@ -64,11 +69,12 @@ function FeedBack() {
     }
     send("NEXT");
   };
+  const isFeedback = state.matches("feedback");
   useEffect(() => {
-    if (state.matches("feedback")) {
+    if (isFeedback) {
       nextQuestionBtnRef.current?.focus();
     }
-  }, [state.value]);
+  }, [isFeedback]);
 
   return (
     <div className="game-footer" id="game-footer">
@@ -81,7 +87,7 @@ function FeedBack() {
       <div className="game-footer-bottom">
         <span id="smaller-score">ניקוד: {score}</span>
         {!answeredCorrectly && (
-          <a href={`https://google.com/search?q=${question?.question}`} target="_blank">
+          <a href={`https://google.com/search?q=${question?.question || ""}`} target="_blank">
             תלמד עליו קצת
           </a>
         )}

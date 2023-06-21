@@ -9,6 +9,6 @@ export default function Navigate({ to, replace }: { to: string; replace?: boolea
     } else {
       router.push(to);
     }
-  }, []);
+  }, [replace, router, to]);
   return null;
 }

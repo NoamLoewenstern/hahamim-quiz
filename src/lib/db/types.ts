@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ReverseKeyValue } from "~/utils/types";
+import { type ReverseKeyValue } from "~/utils/types";
 
 export const DifficultyEnum = {
   EASY: "EASY",

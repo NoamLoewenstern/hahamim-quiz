@@ -1,6 +1,6 @@
-import { GetServerSideProps } from "next";
+import { type GetServerSideProps } from "next";
 import { getServerAuthSession } from "~/server/auth";
-import { Session } from "next-auth";
+import { type Session } from "next-auth";
 
 export const getServerSideProps: GetServerSideProps<{ adminUser: Session["user"] }> = async ({
   req,
@@ -26,5 +26,6 @@ export const getServerSideProps: GetServerSideProps<{ adminUser: Session["user"]
     props: {},
   };
 };
-// redirect to /api/auth/signin by getServerSideProps
-export default function Login() {}
+export default function Login() {
+  // redirect to /api/auth/signin by getServerSideProps
+}
