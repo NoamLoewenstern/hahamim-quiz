@@ -5,6 +5,7 @@ import { api } from "~/utils/api";
 import { AnswerTypeInHebrew, DifficultyInHebrew } from "~/lib/db/types";
 import { getServerAuthSession } from "~/server/auth";
 import { type Session } from "next-auth";
+import { cache } from "~/setupCache";
 
 export const getServerSideProps: GetServerSideProps<{
   adminUser: Session["user"];
@@ -39,8 +40,9 @@ export const Admin: NextPage<Props> = () => {
   } = api.admin.getPendingQuestions.useQuery();
   const { data: sumTotalPlayed } = api.records.getSumTotalPlayed.useQuery();
   const approveQuestion = api.admin.approveQuestion.useMutation({
-    onSuccess: () => {
-      void refetchWaitingQuestions();
+    onSuccess: async () => {
+      await refetchWaitingQuestions();
+      await cache.questions.rehydrate();
     },
   });
   const deleteQuestion = api.admin.deleteQuestion.useMutation({
