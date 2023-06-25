@@ -33,6 +33,7 @@ export const Admin: NextPage<Props> = () => {
   const {
     data: pendingQuestions,
     isLoading: isLoadingPendingQuestions,
+    isFetching: isFetchingPendingQuestions,
     error: waitingQuestionsError,
     refetch: refetchWaitingQuestions,
   } = api.admin.getPendingQuestions.useQuery();
@@ -60,13 +61,14 @@ export const Admin: NextPage<Props> = () => {
     deleteQuestion.mutate(questionKey);
   };
 
-  if (isLoadingPendingQuestions)
-    return (
-      <>
-        <p>Loading Waiting Questions...</p>
-        <LoadingSpinnerModal />
-      </>
-    );
+  if (
+    isFetchingPendingQuestions ||
+    isLoadingPendingQuestions ||
+    deleteQuestion.isLoading ||
+    approveQuestion.isLoading
+  ) {
+    return <LoadingSpinnerModal />;
+  }
   if (error || waitingQuestionsError)
     return <p>Error: {(error || waitingQuestionsError)?.toString?.()}</p>;
   return (
