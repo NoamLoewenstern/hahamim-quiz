@@ -21,6 +21,9 @@ export function getRandomIntegers(
   if (unique && count > to - from + 1) {
     throw new Error("Cannot generate the required amount of unique numbers in the given range.");
   }
+  if (count === 1) {
+    return [Math.floor(Math.random() * (to - from + 1)) + from];
+  }
 
   if (unique && count > (to - from + 1) / 2) {
     // only if will need large amount of unique numbers
