@@ -111,31 +111,12 @@ export const createQuizMachine = ({
   getNextQuizQuestion: () => Promise<IQuestionEntry | null>;
   invalidateQuestions: () => void | Promise<void>;
 }) => {
-  function invokeGetNextQuestion({ onDoneTarget }: { onDoneTarget?: string } = {}): TInvokeConfig {
-    return {
-      src: getNextQuizQuestion, // passed in as a deps service
-      onDone: {
-        target: onDoneTarget,
-
-        actions: [
-          assign((ctx, event) => ({
-            nextQuestions: [...ctx.nextQuestions, event.data as IQuestionEntry],
-          })),
-        ],
-      },
-      onError: {
-        target: QuizStates.error,
-        actions: assign({ error: (_, event) => event.data as string }),
-      },
-    };
-  }
   const getNextQuizQuestionCB = async (callback: Sender<QuizEvent>) => {
     try {
       const question = await getNextQuizQuestion();
       callback({ type: "GOT_NEXT_QUESTION", data: question });
     } catch (error) {
       console.error(error);
-
       callback({
         type: "GOT_NEXT_QUESTION_ERROR",
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
@@ -171,8 +152,6 @@ export const createQuizMachine = ({
         init: {
           entry: [
             assign(initContext),
-            spawnGetNextQuestionActorAction,
-            spawnGetNextQuestionActorAction,
             spawnGetNextQuestionActorAction,
             spawnGetNextQuestionActorAction,
           ],
