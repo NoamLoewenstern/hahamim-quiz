@@ -58,14 +58,13 @@ export const AddQuestion: NextPage = () => {
   } = useForm<typeof FormFields>({
     mode: "onBlur",
   });
-
   return (
     <>
       {!addedQuestion && (
         <form
           className="flex flex-col items-center justify-start p-4"
           autoComplete="off"
-          onSubmit={void handleSubmit((values) => addNewQuestion.mutate(values))}
+          onSubmit={(e) => void handleSubmit((values) => addNewQuestion.mutate(values))(e)}
         >
           <h2>הוסף שאלה</h2>
           <div className={`flex w-4/5 items-center justify-around ${isMobile ? "flex-col" : ""}`}>
