@@ -226,7 +226,6 @@ export const createQuizMachine = ({
 
         question: {
           entry: [QuizActionTypes.resetElapsed, spawnGetNextQuestionActorAction],
-          // invoke: [{ src: "timerService" }, invokeGetNextQuestion()],
           invoke: [{ src: "timerService" }],
           on: {
             TICK: {
@@ -245,12 +244,7 @@ export const createQuizMachine = ({
             NEXT: [
               {
                 target: QuizStates.loadQuestion,
-                cond: (ctx) => {
-                  console.log(`ctx.nextQuestions.length`, ctx.nextQuestions.length);
-                  console.log(ctx.nextQuestions);
-
-                  return ctx.nextQuestions.length > 0;
-                }, // has another question
+                cond: (ctx) => ctx.nextQuestions.length > 0, // has another question
               },
               {
                 target: QuizStates.end, // after last question
