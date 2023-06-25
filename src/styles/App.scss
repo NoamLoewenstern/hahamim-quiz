@@ -1,0 +1,107 @@
+@import url(https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css);
+
+* {
+  direction: rtl;
+  box-sizing: border-box;
+  outline: none;
+  scroll-behavior: smooth;
+  font-family: Heebo;
+}
+
+body {
+  margin: 0;
+  background-color: #ecf8f7;
+}
+
+::selection {
+  color: #ecf8f7;
+  background: #0294a2;
+}
+
+header {
+  position: absolute;
+  opacity: 0;
+}
+
+h2 {
+  color: #0294a2;
+  font-size: 2rem;
+  font-weight: 900;
+  margin: -0.5rem 0 0 0;
+}
+
+@media screen and (max-width: 810px) {
+  header {
+    top: 10%;
+    text-align: center;
+    opacity: 1;
+    color: #fff;
+  }
+
+  h1 {
+    font-size: 2.6rem;
+    margin: -1rem 0 0 0;
+  }
+}
+
+.text-box {
+  width: 100%;
+  height: 3rem;
+  padding-right: 0.5rem;
+  margin: 0.5rem 0 0 0;
+  border: 1px solid #333;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  caret-color: #0294a2;
+  transition: border 80ms ease;
+
+  &:focus {
+    border: 2px solid #0294a2;
+  }
+}
+
+optgroup {
+  color: #0294a2;
+  font-weight: 900;
+
+  option {
+    color: #333;
+  }
+}
+
+.error-place {
+  color: #f10000;
+  height: 0.8rem;
+  font-size: 0.8rem;
+  margin: 0;
+  margin-bottom: 0.3rem;
+  transition: 200ms ease;
+}
+
+.records-page-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn {
+  color: #ecf8f7;
+  background-color: #0294a2;
+  padding: 0.5rem 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 1rem;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #017f8b;
+  }
+
+  &.disabled {
+    background-color: #333;
+    cursor: not-allowed;
+  }
+}

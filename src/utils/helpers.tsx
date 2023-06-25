@@ -2,9 +2,14 @@ export function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 function shuffleArray<T>(array: T[]): T[] {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
+  if (array.length < 2) return array;
+  let currentIndex = array.length;
+  while (currentIndex !== 0) {
+    // Pick a remaining element...
+    const randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+    // Swap
+    [array[currentIndex], array[randomIndex]] = [array[randomIndex] as T, array[currentIndex] as T];
   }
   return array;
 }
@@ -15,6 +20,9 @@ export function getRandomIntegers(
 ): number[] {
   if (unique && count > to - from + 1) {
     throw new Error("Cannot generate the required amount of unique numbers in the given range.");
+  }
+  if (count === 1) {
+    return [Math.floor(Math.random() * (to - from + 1)) + from];
   }
 
   if (unique && count > (to - from + 1) / 2) {
@@ -37,18 +45,24 @@ export function getRandomIntegers(
 
 export function* chain<T>(...iterables: Iterable<T>[]) {
   // Loop through each iterable
-  for (let iterable of iterables) {
+  for (const iterable of iterables) {
     // Loop through each value of the iterable
-    for (let value of iterable) {
+    for (const value of iterable) {
       // Yield the value
       yield value;
     }
   }
 }
 export async function* asyncChain<T>(...iterables: AsyncIterable<T>[]) {
-  for (let iterable of iterables) {
-    for await (let value of iterable) {
+  for (const iterable of iterables) {
+    for await (const value of iterable) {
       yield value;
     }
   }
 }
+
+export const getBaseUrl = () => {
+  if (typeof window !== "undefined") return ""; // browser should use relative url
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`; // SSR should use vercel url
+  return `http://localhost:${process.env.PORT ?? 3000}`; // dev SSR should use localhost
+};
