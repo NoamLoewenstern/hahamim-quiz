@@ -1,6 +1,5 @@
 import { type Question } from "@prisma/client";
 import { DifficultyEnum, type IDifficulty } from "~/lib/db/types";
-import { prisma } from "~/server/db";
 import memCache from "memory-cache";
 import { getRandomIntegers } from "~/utils/helpers";
 export type QuestionsCache = {
@@ -10,6 +9,8 @@ export type QuestionsCache = {
   count: number;
 };
 async function setupQuestionsCache() {
+  const { prisma } = await import("~/server/db");
+
   const allQuestions = await prisma.question.findMany({
     where: { approved: true },
   });
