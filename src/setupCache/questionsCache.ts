@@ -36,7 +36,6 @@ function getRandomByDifficulty({ difficulty, count }: { difficulty: IDifficulty;
     return [questions[randomIndex]].filter(Boolean);
   }
   const randomIndexes = getRandomIntegers(0, questions.length, { unique: true, count });
-  console.log(`difficulty,randomIndexes`, difficulty, randomIndexes);
 
   const randomQuestions = randomIndexes.map((index) => questions[index]).filter(Boolean);
   return randomQuestions;
