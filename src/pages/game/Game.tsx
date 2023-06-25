@@ -1,5 +1,5 @@
 import { type NextPage } from "next";
-import Questioneer from "~/Componenets/Questioneer/Questioneer";
+import Questioneer from "~/pages/game/Questioneer/Questioneer";
 
 const GameQuestioneer: NextPage = () => {
   return (

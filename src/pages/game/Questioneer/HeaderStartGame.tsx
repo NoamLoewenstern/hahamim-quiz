@@ -10,8 +10,13 @@ export default function HeaderStartGame() {
 
   const handlerStart = () => {
     send("START");
-    open();
-    void waitFor(service, (state) => state.matches("question"), { timeout: 2000 }).then(close);
+    // open();
+    // void waitFor(service, (state) => state.matches("question"), { timeout: 2000 })
+    //   .then(close)
+    //   .catch(() => {
+    //     close();
+    //     alert("שגיאה בהתחלת המשחק! פנה למפתח האתר...");
+    //   });
   };
 
   return (

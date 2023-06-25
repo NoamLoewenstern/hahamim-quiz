@@ -7,5 +7,9 @@ await import("./src/env.mjs");
 /** @type {import("next").NextConfig} */
 const config = {
   reactStrictMode: true,
+  experimental: {
+    instrumentationHook: true,
+  },
+  pageExtensions: ["page.tsx", "page.ts", "page.jsx", "page.js"],
 };
 export default config;
