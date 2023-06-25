@@ -99,7 +99,7 @@ const initContext: QuizContext = {
   error: null,
   fetcherActorRef: null,
 };
-type TInvokeConfig<E extends QuizEvent = QuizEvent> = InvokeConfig<QuizContext, E>;
+// type TInvokeConfig<E extends QuizEvent = QuizEvent> = InvokeConfig<QuizContext, E>;
 
 /*
 THE MACHINE

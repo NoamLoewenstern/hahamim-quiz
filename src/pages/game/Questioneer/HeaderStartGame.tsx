@@ -1,11 +1,8 @@
 import useTitle from "~/hooks/useTitle";
-import { useGlobalLoadingSpinner } from "~/hooks/useLoadingSpinner";
-import { waitFor } from "xstate/lib/waitFor";
 import { useQuizMachine } from "~/xstate-machines/quiz-machine";
 
 export default function HeaderStartGame() {
-  const [, send, service] = useQuizMachine();
-  const { open, close } = useGlobalLoadingSpinner();
+  const [, send] = useQuizMachine();
   const { title, subtitle } = useTitle();
 
   const handlerStart = () => {
