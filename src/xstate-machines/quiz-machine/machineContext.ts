@@ -1,7 +1,8 @@
 import { useMachine } from "@xstate/react";
 import { createContext } from "react";
-import { quizMachine } from ".";
+import { type IQuizMachine, createQuizMachine } from "./quiz-machine";
 
-const IMachineHookCB = () => useMachine(quizMachine);
+// eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+const IMachineHookCB = () => useMachine<IQuizMachine>(createQuizMachine({} as any));
 type IMachineContext = ReturnType<typeof IMachineHookCB>;
 export const MachineContext = createContext<IMachineContext>([] as unknown as IMachineContext);

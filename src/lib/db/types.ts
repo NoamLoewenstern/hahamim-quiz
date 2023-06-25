@@ -44,7 +44,6 @@ export const Difficulties = [
   DifficultyEnum.MEDIUM,
   DifficultyEnum.HARD,
 ] as const;
-
 export const DifficultyInHebrew = {
   [DifficultyEnum.EASY]: "קל",
   [DifficultyEnum.MEDIUM]: "בינוני",
